@@ -146,7 +146,10 @@ export class MemoryStore {
     if (sort === 'created') {
       list = [...list].sort((a, b) => {
         const cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        return direction === 'desc' ? -cmp : cmp;
+        if (cmp !== 0) {
+          return direction === 'desc' ? -cmp : cmp;
+        }
+        return direction === 'desc' ? b.number - a.number : a.number - b.number;
       });
     }
     return list;
