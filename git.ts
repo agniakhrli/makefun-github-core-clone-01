@@ -50,7 +50,9 @@ export function handleInfoRefs(req: IncomingMessage, res: ServerResponse, owner:
         'agent=git/2.40.0\n',
         'object-format=sha1\n',
         'ofs-delta\n',
-        'shallow\n'
+        'shallow\n',
+        'ls-refs\n',
+        'fetch\n'
       ];
       const body = Buffer.concat([...pktLines.map(l => encodePktLine(l)), encodeFlushPkt()]);
       res.writeHead(200, {
