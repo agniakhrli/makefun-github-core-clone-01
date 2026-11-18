@@ -94,6 +94,12 @@ export async function handleMcp(req: IncomingMessage, res: ServerResponse): Prom
     const args = params?.arguments || {};
     const viewer = getViewerLogin();
 
+    const validTools = ['create_repo', 'get_repo', 'create_issue', 'list_issues', 'create_pull_request', 'merge_pull_request'];
+    if (!validTools.includes(toolName)) {
+      sendJsonRpcError(res, 200, -32601, `Unknown tool: ${toolName}`, id);
+      return;
+    }
+
     try {
       let result: any;
       if (toolName === 'create_repo') {
@@ -108,8 +114,6 @@ export async function handleMcp(req: IncomingMessage, res: ServerResponse): Prom
         result = globalStore.createPull(args.owner || viewer, args.repo, args.title || 'PR', args.body || '', args.head || 'main', args.base || 'main', viewer);
       } else if (toolName === 'merge_pull_request') {
         result = globalStore.mergePull(args.owner || viewer, args.repo, args.pull_number, args.commit_message);
-      } else {
-        throw new Error(`Unknown tool: ${toolName}`);
       }
 
       sendJsonRpc(res, 200, {
@@ -131,4 +135,9 @@ export async function handleMcp(req: IncomingMessage, res: ServerResponse): Prom
 function sendJsonRpc(res: ServerResponse, status: number, result: any, id: any): void {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify({ jsonrpc: '2.0', result, id }) + '\n');
+}
+
+function sendJsonRpcError(res: ServerResponse, status: number, code: number, message: string, id: any): void {
+  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify({ jsonrpc: '2.0', error: { code, message }, id }) + '\n');
 }
